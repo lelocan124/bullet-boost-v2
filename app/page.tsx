@@ -5,16 +5,21 @@ export default function BulletBoost() {
   const [input, setInput] = useState('');
   const [result, setResult] = useState('');
   const [count, setCount] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false); // Sayfanın tam yüklendiğini anlamak için
 
-  // Sayfa yüklendiğinde kullanıcının kaç hakkı kaldığını kontrol et
+  // Sayfa yüklendiğinde tarayıcı hafızasını oku
   useEffect(() => {
     const savedCount = localStorage.getItem('bulletCount');
-    if (savedCount) setCount(parseInt(savedCount));
+    if (savedCount) {
+      setCount(parseInt(savedCount));
+    }
+    setIsLoaded(true); // Artık tarayıcıdayız, her şey hazır
   }, []);
 
   const boostText = () => {
+    // Önce kontrol: Hak bittiyse çalıştırma
     if (count >= 2) {
-      alert("⚠️ Ücretsiz hakkın bitti kanka! Pro sürümle sınırsız mermi atabilirsin. (TBD Touch Özel)");
+      alert("⚠️ Ücretsiz hakkın bitti kanka! TBD Touch Pro ile sınırsız mermi atabilirsin.");
       return;
     }
 
@@ -26,9 +31,11 @@ export default function BulletBoost() {
       "Directed cross-functional teams to exceed quarterly sales targets by 15%."
     ];
     
+    // Sayacı artır ve hafızaya kazı
     const newCount = count + 1;
     setCount(newCount);
-    localStorage.setItem('bulletCount', newCount.toString()); // Tarayıcıya kaydet
+    localStorage.setItem('bulletCount', newCount.toString());
+    
     setResult(bullets[Math.floor(Math.random() * bullets.length)]);
   };
 
@@ -38,7 +45,12 @@ export default function BulletBoost() {
       <p style={{ color: '#888', marginBottom: '30px' }}>Don't just list tasks. Show impact.</p>
       
       <div style={{ width: '100%', maxWidth: '500px', backgroundColor: '#111', padding: '30px', borderRadius: '20px', border: '1px solid #333' }}>
-        <p style={{ color: '#444', fontSize: '0.8rem', textAlign: 'right', marginBottom: '10px' }}>Kalan Hak: {2 - count}/2</p>
+        {/* Sadece sayfa yüklendiğinde hakkı göster ki kafa karışmasın */}
+        {isLoaded && (
+          <p style={{ color: '#444', fontSize: '0.8rem', textAlign: 'right', marginBottom: '10px' }}>
+            Kalan Hak: {Math.max(0, 2 - count)}/2
+          </p>
+        )}
         
         <textarea 
           value={input}
@@ -49,9 +61,19 @@ export default function BulletBoost() {
         
         <button 
           onClick={boostText}
-          style={{ width: '100%', backgroundColor: count >= 2 ? '#333' : '#fff', color: count >= 2 ? '#888' : '#000', padding: '15px', borderRadius: '12px', fontWeight: 'bold', cursor: count >= 2 ? 'not-allowed' : 'pointer', border: 'none' }}
+          disabled={isLoaded && count >= 2}
+          style={{ 
+            width: '100%', 
+            backgroundColor: isLoaded && count >= 2 ? '#333' : '#fff', 
+            color: isLoaded && count >= 2 ? '#888' : '#000', 
+            padding: '15px', 
+            borderRadius: '12px', 
+            fontWeight: 'bold', 
+            cursor: isLoaded && count >= 2 ? 'not-allowed' : 'pointer', 
+            border: 'none' 
+          }}
         >
-          {count >= 2 ? "Hakkın Bitti ❌" : "Boost My Career 🚀"}
+          {isLoaded && count >= 2 ? "Hakkın Bitti ❌" : "Boost My Career 🚀"}
         </button>
         
         {result && (
@@ -63,7 +85,7 @@ export default function BulletBoost() {
 
       <div style={{ marginTop: '30px', textAlign: 'center' }}>
         <button 
-          onClick={() => alert("Yakında: Ödeme sistemi TBD Touch ile geliyor!")}
+          onClick={() => alert("Ödeme Sistemi Yükleniyor... TBD Touch Kalitesiyle!")}
           style={{ background: 'none', border: 'none', color: '#f39c12', textDecoration: 'underline', cursor: 'pointer' }}
         >
           Upgrade to Pro for $9/mo
